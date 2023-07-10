@@ -1,3 +1,4 @@
+import { AddIcon } from "@chakra-ui/icons";
 import { Box } from "@chakra-ui/react"
 import { FC } from "react";
 
@@ -6,7 +7,7 @@ type Props = {
 }
 
 export const AddFab: FC<Props> = ({ onClick }) => {
-  return <Box onClick={onClick} borderRadius={100} position="absolute" right={20} bottom={20} height={50} width={50} backgroundColor="red" display="flex" justifyContent="center" alignItems="center">
-    Hi
+  return <Box onClick={onClick} borderRadius={100} position="absolute" right={20} bottom={20} height={50} width={50} backgroundColor="gray.500" display="flex" justifyContent="center" alignItems="center">
+    <AddIcon />
   </Box>
 }

@@ -12,7 +12,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const accountCollection = collection(db, "account").withConverter({
+export const accountCollection = collection(db, "account").withConverter({
   toFirestore: (account: Account) => account,
   fromFirestore: (snapshot, options) => snapshot.data(options) as Account
 });
