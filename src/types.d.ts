@@ -3,3 +3,7 @@ type Account = {
   secret: string;
   tag?: string;
 }
+
+type AccountWithId = Account & {
+  id: string;
+}

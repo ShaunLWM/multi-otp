@@ -2,7 +2,7 @@ import { useFirestoreQueryData } from "@react-query-firebase/firestore";
 import { accountCollectionRef } from "../lib/Firebase";
 
 export const useAccounts = () => {
-  return useFirestoreQueryData<Account, { tags: string[], accounts: Account[] }>(["products"], accountCollectionRef, { subscribe: true }, {
+  return useFirestoreQueryData<AccountWithId, { tags: string[], accounts: AccountWithId[] }>(["products"], accountCollectionRef, { subscribe: true }, {
     select: (snapshot) => {
       const tags = new Set<string>();
       tags.add("All");

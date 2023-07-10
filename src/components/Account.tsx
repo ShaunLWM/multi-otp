@@ -6,8 +6,8 @@ import { getCurrentSeconds, truncateTo } from "../lib/Helper";
 import { useCopyToClipboard } from "../lib/useCopyToClipboard";
 
 type Props = {
-  account: Account;
-  onDeletePress: (email: string) => void;
+  account: AccountWithId;
+  onDeletePress: (account: AccountWithId) => void;
 }
 
 const PERIOD = 30;
@@ -53,6 +53,9 @@ export const Account: FC<Props> = ({ account, onDeletePress }) => {
     })
   }
 
+  const onDeleteClick = () => {
+    onDeletePress(account)
+  }
 
   return <Box marginBottom={2}>
     <Flex flexDir="row" justifyContent="space-between" >
@@ -61,7 +64,7 @@ export const Account: FC<Props> = ({ account, onDeletePress }) => {
         <Text>{token}</Text>
         <CopyIcon marginLeft={2} _hover={{ cursor: "pointer" }} onClick={onCopyPress} />
         <EditIcon marginLeft={2} _hover={{ cursor: "pointer" }} />
-        <DeleteIcon marginLeft={2} onClick={() => onDeletePress(email)} _hover={{ cursor: "pointer" }} />
+        <DeleteIcon marginLeft={2} onClick={onDeleteClick} _hover={{ cursor: "pointer" }} />
       </Flex>
     </Flex>
     <Progress value={updatingIn / (PERIOD * 1.0) * 100} size='xs' colorScheme='pink' />

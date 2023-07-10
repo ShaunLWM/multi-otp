@@ -19,8 +19,8 @@ function App() {
     setCurrentTag(event.target.value)
   }
 
-  const onDeletePress = (email: string) => {
-    deleteModalRef.current?.open(email);
+  const onDeletePress = (account: AccountWithId) => {
+    deleteModalRef.current?.open(account);
   }
 
   return (

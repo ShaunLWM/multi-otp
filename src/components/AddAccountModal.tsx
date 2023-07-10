@@ -43,7 +43,7 @@ export const AddAccountModal: FC<Props> = ({ isOpen, onClose }) => {
 
   const onConfirmPress = () => {
     if (!email || !secret) return;
-    mutate({ email, secret, tag });
+    mutate({ email, secret, tag } as any);
   }
 
   const reset = () => {
