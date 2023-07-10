@@ -27,9 +27,9 @@ function App() {
     <Container height="100vh" width="100vw" padding={2} gap={2}>
       <AddFab onClick={onOpen} />
       <Select value={currentTag} onChange={onHandleTagChange}>
-        {tags?.map(tag => <option value={tag}>{tag}</option>)}
+        {tags?.map(tag => <option key={tag} value={tag}>{tag}</option>)}
       </Select>
-      {!isLoading && filteredAccounts?.map(account => <Account account={account} onDeletePress={onDeletePress} />)}
+      {!isLoading && filteredAccounts?.map((account, index) => <Account key={`account-${account.email}-${index}`} account={account} onDeletePress={onDeletePress} />)}
       <AddAccountModal isOpen={isOpen} onClose={onClose} />
       <DeleteModal ref={deleteModalRef} />
     </Container>
