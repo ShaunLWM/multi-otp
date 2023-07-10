@@ -11,14 +11,13 @@ type Props = {
 export const AddAccountModal: FC<Props> = ({ isOpen, onClose }) => {
   const [email, setEmail] = useState("")
   const [secret, setSecret] = useState("");
+  const [tag, setTag] = useState("")
   const toast = useToast();
   const { mutate } = useFirestoreCollectionMutation(accountCollection, {
     onError: (error) => {
       console.error(error);
     },
     onSuccess: () => {
-      setEmail("");
-      setSecret("");
       toast({
         title: 'Account created.',
         description: "We've created your account for you.",
@@ -27,21 +26,35 @@ export const AddAccountModal: FC<Props> = ({ isOpen, onClose }) => {
         isClosable: true,
       });
 
-      onClose();
+      onClosePress();
     }
   });
 
-  const onHandleChange = (event: React.ChangeEvent<HTMLInputElement>, type: string) => {
-    if (type === 'email') {
-      setEmail(event.target.value)
-    } else {
-      setSecret(event.target.value)
+  const onHandleChange = (event: React.ChangeEvent<HTMLInputElement>, type: "email" | "secret" | "tag") => {
+    switch (type) {
+      case "email":
+        return setEmail(event.target.value);
+      case "secret":
+        return setSecret(event.target.value);
+      case "tag":
+        return setTag(event.target.value);
     }
   }
 
   const onConfirmPress = () => {
     if (!email || !secret) return;
-    mutate({ email, secret });
+    mutate({ email, secret, tag });
+  }
+
+  const reset = () => {
+    setEmail("");
+    setSecret("");
+    setTag("");
+  }
+
+  const onClosePress = () => {
+    onClose();
+    reset();
   }
 
   return (<Modal isOpen={isOpen} onClose={onClose}>
@@ -50,8 +63,9 @@ export const AddAccountModal: FC<Props> = ({ isOpen, onClose }) => {
       <ModalHeader>Add Account</ModalHeader>
       <ModalCloseButton />
       <ModalBody>
-        <Input placeholder="Email" value={email} onChange={event => onHandleChange(event, "email")} marginBottom={2}/>
-        <Input placeholder="Secret key" value={secret} onChange={event => onHandleChange(event, "secret")} />
+        <Input placeholder="Email" value={email} onChange={event => onHandleChange(event, "email")} marginBottom={2} />
+        <Input placeholder="Secret key" value={secret} onChange={event => onHandleChange(event, "secret")} marginBottom={2} />
+        <Input placeholder="Tag (optional)" value={tag} onChange={event => onHandleChange(event, "tag")} />
       </ModalBody>
       <ModalFooter>
         <Button colorScheme='blue' mr={3} onClick={onClose}>

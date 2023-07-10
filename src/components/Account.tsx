@@ -14,7 +14,7 @@ const PERIOD = 30;
 
 export const Account: FC<Props> = ({ account, onDeletePress }) => {
   const toast = useToast();
-  const [value, copy] = useCopyToClipboard();
+  const [, copy] = useCopyToClipboard();
   const { email, secret } = account;
   const [updatingIn, setUpdatingIn] = useState(30);
   const [token, setToken] = useState("");
