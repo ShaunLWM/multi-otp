@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { addDoc, collection, deleteDoc, getDocs, getFirestore, limit, query, where } from "firebase/firestore";
+import { FirestoreDataConverter, QueryDocumentSnapshot, addDoc, collection, deleteDoc, getDocs, getFirestore, limit, query, where } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_APIKEY,
@@ -10,12 +10,20 @@ const firebaseConfig = {
   appId: "1:1009378327155:web:c173962e9596cf4c08c806"
 };
 
+const converter: FirestoreDataConverter<Account> = {
+  toFirestore: (item) => item,
+  fromFirestore: (snapshot: QueryDocumentSnapshot<Account>, options) => {
+    const data = snapshot.data(options);
+    return {
+      ...data,
+      id: snapshot.id
+    };
+  }
+};
+
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-export const accountCollection = collection(db, "account").withConverter({
-  toFirestore: (account: Account) => account,
-  fromFirestore: (snapshot, options) => snapshot.data(options) as Account
-});
+export const accountCollection = collection(db, "account").withConverter(converter);
 
 export const accountCollectionRef = query<Account>(accountCollection);
 
@@ -23,11 +31,6 @@ export async function getAccounts() {
   const citySnapshot = await getDocs(accountCollection);
   const cityList = citySnapshot.docs.map(doc => doc.data());
   return cityList;
-}
-
-export type Account = {
-  email: string;
-  secret: string;
 }
 
 export async function addAccount(account: Account) {
