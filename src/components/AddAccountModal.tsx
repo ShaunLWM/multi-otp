@@ -95,6 +95,7 @@ export const AddAccountModal = forwardRef<AddAccountModalRef, Props>((props, ref
       return mutate({ email, secret, tag, notes } as any);
     }
 
+    if (!id) return console.log(`Something went wrong.. ${id}`);
     return edit({ email, secret, tag, notes } as any);
   }
 
