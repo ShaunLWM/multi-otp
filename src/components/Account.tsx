@@ -1,5 +1,5 @@
 import { CopyIcon, EditIcon, DeleteIcon } from "@chakra-ui/icons";
-import { Box, Flex, Progress, Text, useToast } from "@chakra-ui/react";
+import { Badge, Box, Flex, Progress, Text, useToast } from "@chakra-ui/react";
 import * as OTPAuth from "otpauth";
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { getCurrentSeconds, truncateTo } from "../lib/Helper";
@@ -15,7 +15,7 @@ const PERIOD = 30;
 export const Account: FC<Props> = ({ account, onDeletePress }) => {
   const toast = useToast();
   const [, copy] = useCopyToClipboard();
-  const { email, secret } = account;
+  const { email, secret, tag } = account;
   const [updatingIn, setUpdatingIn] = useState(30);
   const [token, setToken] = useState("");
 
@@ -58,8 +58,8 @@ export const Account: FC<Props> = ({ account, onDeletePress }) => {
   }
 
   return <Box marginBottom={2}>
-    <Flex flexDir="row" justifyContent="space-between" >
-      <Text>{email}</Text>
+    <Flex flexDir="row" justifyContent="space-between">
+      <Text>{email}{!!tag && <Badge ml='1' colorScheme='green'>{tag}</Badge>}</Text>
       <Flex alignItems="center">
         <Text>{token}</Text>
         <CopyIcon marginLeft={2} _hover={{ cursor: "pointer" }} onClick={onCopyPress} />
