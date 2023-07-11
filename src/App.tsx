@@ -1,14 +1,14 @@
-import { Container, Select, useDisclosure } from '@chakra-ui/react';
+import { Container, Select } from '@chakra-ui/react';
 import { ChangeEvent, useRef, useState } from 'react';
 import { Account } from './components/Account';
-import { AddAccountModal } from './components/AddAccountModal';
+import { AddAccountModal, AddAccountModalRef } from './components/AddAccountModal';
 import { AddFab } from './components/AddFab';
 import { DeleteModal, DeleteModalRef } from './components/DeleteModal';
 import { useAccounts } from './hooks/useAccounts';
 
 function App() {
-  const { isOpen, onOpen, onClose } = useDisclosure();
   const deleteModalRef = useRef<DeleteModalRef | null>(null);
+  const addModalRef = useRef<AddAccountModalRef | null>(null);
   const [currentTag, setCurrentTag] = useState("All");
 
   const { data, isLoading } = useAccounts();
@@ -23,14 +23,18 @@ function App() {
     deleteModalRef.current?.open(account);
   }
 
+  const onAddModalPress = (account?: AccountWithId) => {
+    addModalRef.current?.open(account);
+  }
+
   return (
     <Container height="100vh" width="100vw" padding={2} gap={2}>
-      <AddFab onClick={onOpen} />
+      <AddFab onClick={onAddModalPress} />
       <Select value={currentTag} onChange={onHandleTagChange}>
         {tags?.map(tag => <option key={tag} value={tag}>{tag}</option>)}
       </Select>
-      {!isLoading && filteredAccounts?.map((account, index) => <Account key={`account-${account.email}-${index}`} account={account} onDeletePress={onDeletePress} />)}
-      <AddAccountModal isOpen={isOpen} onClose={onClose} />
+      {!isLoading && filteredAccounts?.map((account, index) => <Account key={`account-${account.email}-${index}`} account={account} onDeletePress={onDeletePress} onEditPress={onAddModalPress} />)}
+      <AddAccountModal ref={addModalRef} />
       <DeleteModal ref={deleteModalRef} />
     </Container>
   );

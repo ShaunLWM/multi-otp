@@ -8,11 +8,12 @@ import { useCopyToClipboard } from "../lib/useCopyToClipboard";
 type Props = {
   account: AccountWithId;
   onDeletePress: (account: AccountWithId) => void;
+  onEditPress: (account: AccountWithId) => void;
 }
 
 const PERIOD = 30;
 
-export const Account: FC<Props> = ({ account, onDeletePress }) => {
+export const Account: FC<Props> = ({ account, onDeletePress, onEditPress }) => {
   const toast = useToast();
   const [, copy] = useCopyToClipboard();
   const { email, secret, tag } = account;
@@ -57,13 +58,17 @@ export const Account: FC<Props> = ({ account, onDeletePress }) => {
     onDeletePress(account)
   }
 
+  const onEditClick = () => {
+    onEditPress(account)
+  }
+
   return <Box marginBottom={2}>
     <Flex flexDir="row" justifyContent="space-between">
       <Text>{email}{!!tag && <Badge ml='1' colorScheme='green'>{tag}</Badge>}</Text>
       <Flex alignItems="center">
         <Text>{token}</Text>
         <CopyIcon marginLeft={2} _hover={{ cursor: "pointer" }} onClick={onCopyPress} />
-        <EditIcon marginLeft={2} _hover={{ cursor: "pointer" }} />
+        <EditIcon marginLeft={2} _hover={{ cursor: "pointer" }} onClick={onEditClick}/>
         <DeleteIcon marginLeft={2} onClick={onDeleteClick} _hover={{ cursor: "pointer" }} />
       </Flex>
     </Flex>

@@ -1,19 +1,48 @@
-import { Button, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Textarea, useToast } from "@chakra-ui/react";
-import { useFirestoreCollectionMutation } from "@react-query-firebase/firestore";
-import { FC, useState } from "react";
+import { Button, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Textarea, useDisclosure, useToast } from "@chakra-ui/react";
+import { useFirestoreCollectionMutation, useFirestoreDocumentMutation } from "@react-query-firebase/firestore";
+import { forwardRef, useImperativeHandle, useState } from "react";
 import { accountCollection } from "../lib/Firebase";
+import { doc } from "firebase/firestore";
 
 type Props = {
-  isOpen: boolean;
-  onClose: () => void;
+  // isOpen: boolean;
+  // onClose: () => void;
 }
 
-export const AddAccountModal: FC<Props> = ({ isOpen, onClose }) => {
+export type AddAccountModalRef = {
+  open: (account?: AccountWithId) => void;
+  close: () => void;
+};
+
+const DEFAULT_RANDOM_ID = "1111111112222222223333333334444444"
+
+export const AddAccountModal = forwardRef<AddAccountModalRef, Props>((props, ref) => {
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const [email, setEmail] = useState("")
   const [secret, setSecret] = useState("");
   const [tag, setTag] = useState("");
   const [notes, setNotes] = useState("");
+  const [id, setId] = useState("");
   const toast = useToast();
+  const isAdd = !id;
+  const editDocRef = doc(accountCollection, id || DEFAULT_RANDOM_ID);
+  const { mutate: edit } = useFirestoreDocumentMutation(editDocRef, {}, {
+    onError: (error) => {
+      console.error(error);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Account updated.",
+        description: "We've updated your account for you.",
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+
+      onClosePress();
+    }
+  });
+
   const { mutate } = useFirestoreCollectionMutation(accountCollection, {
     onError: (error) => {
       console.error(error);
@@ -44,9 +73,29 @@ export const AddAccountModal: FC<Props> = ({ isOpen, onClose }) => {
     }
   }
 
+  useImperativeHandle(ref, () => ({
+    open: (account) => {
+      if (account) {
+        const { id, email, secret, tag = "", notes = "" } = account;
+        setId(id);
+        setEmail(email);
+        setSecret(secret);
+        setTag(tag);
+        setNotes(notes);
+      }
+      onOpen();
+    },
+    close: onClose,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), []);
+
   const onConfirmPress = () => {
     if (!email || !secret) return;
-    mutate({ email, secret, tag, notes } as any);
+    if (isAdd) {
+      return mutate({ email, secret, tag, notes } as any);
+    }
+
+    return edit({ email, secret, tag, notes } as any);
   }
 
   const reset = () => {
@@ -64,7 +113,7 @@ export const AddAccountModal: FC<Props> = ({ isOpen, onClose }) => {
   return (<Modal isOpen={isOpen} onClose={onClose}>
     <ModalOverlay />
     <ModalContent>
-      <ModalHeader>Add Account</ModalHeader>
+      <ModalHeader>{isAdd ? "Add" : "Modify"} Account</ModalHeader>
       <ModalCloseButton />
       <ModalBody>
         <Input placeholder="Email" value={email} onChange={event => onHandleChange(event, "email")} marginBottom={2} />
@@ -76,8 +125,8 @@ export const AddAccountModal: FC<Props> = ({ isOpen, onClose }) => {
         <Button colorScheme="blue" mr={3} onClick={onClose}>
           Close
         </Button>
-        <Button variant="ghost" disabled={!email || !secret} onClick={onConfirmPress}>Confirm</Button>
+        <Button variant="ghost" disabled={!email || !secret} onClick={onConfirmPress}>{isAdd ? "Confirm" : "Update"}</Button>
       </ModalFooter>
     </ModalContent>
   </Modal>)
-}
+});
