@@ -1,4 +1,4 @@
-import { CopyIcon, EditIcon, DeleteIcon } from "@chakra-ui/icons";
+import { CopyIcon, DeleteIcon, EditIcon } from "@chakra-ui/icons";
 import { Badge, Box, Flex, Progress, Text, useToast } from "@chakra-ui/react";
 import * as OTPAuth from "otpauth";
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
@@ -62,15 +62,25 @@ export const Account: FC<Props> = ({ account, onDeletePress, onEditPress }) => {
     onEditPress(account)
   }
 
+  const renderTag = () => {
+    if (!tag || !Array.isArray(tag) || (Array.isArray(tag) && tag.length < 1)) {
+      return null
+    }
+
+    return <>{
+      tag.map(tag => <Badge ml='1' colorScheme='green'>{tag}</Badge>)
+    }</>
+  }
+
   return <Box marginBottom={2}>
     <Flex flexDir="row" justifyContent="space-between">
-      <Text>{email}{!!tag && <Badge ml='1' colorScheme='green'>{tag}</Badge>}</Text>
+      <Text>{email}</Text>{renderTag()}
       <Flex alignItems="center">
         <Text>{token}</Text>
         <CopyIcon marginLeft={2} _hover={{ cursor: "pointer" }} onClick={onCopyPress} />
-        <EditIcon marginLeft={2} _hover={{ cursor: "pointer" }} onClick={onEditClick}/>
+        <EditIcon marginLeft={2} _hover={{ cursor: "pointer" }} onClick={onEditClick} />
         <DeleteIcon marginLeft={2} onClick={onDeleteClick} _hover={{ cursor: "pointer" }} />
-      </Flex>
+      r</Flex>
     </Flex>
     <Progress value={updatingIn / (PERIOD * 1.0) * 100} size='xs' colorScheme='pink' />
   </Box>

@@ -1,7 +1,7 @@
 type Account = {
   email: string;
   secret: string;
-  tag?: string;
+  tag?: Array<string>;
   notes?: string;
 }
 
