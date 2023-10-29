@@ -7,8 +7,8 @@ export const useAccounts = () => {
       const tags = new Set<string>();
       tags.add("All");
       snapshot.forEach((doc) => {
-        if (doc.tag && Array.isArray(doc.tag)) {
-          doc.tag.forEach(tags.add)
+        if (doc.tag && Array.isArray(doc.tag) && doc.tag.length > 0) {
+          doc.tag.forEach(item => tags.add(item))
         }
       })
 
