@@ -13,7 +13,7 @@ function App() {
 
   const { data, isLoading } = useAccounts();
   const { accounts, tags } = data || {};
-  const filteredAccounts = accounts?.filter(account => currentTag !== "All" ? account.tag?.toLowerCase() === currentTag : true);
+  const filteredAccounts = accounts?.filter(account => currentTag !== "All" ? account.tag?.some(tag => tag?.toLowerCase() === currentTag.toLowerCase()) : true);
 
   const onHandleTagChange = (event: ChangeEvent<HTMLSelectElement>) => {
     setCurrentTag(event.target.value)
