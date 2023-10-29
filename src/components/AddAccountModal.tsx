@@ -76,11 +76,11 @@ export const AddAccountModal = forwardRef<AddAccountModalRef, Props>((props, ref
   useImperativeHandle(ref, () => ({
     open: (account) => {
       if (account) {
-        const { id, email, secret, tag = "", notes = "" } = account;
+        const { id, email, secret, tag = [], notes = "" } = account;
         setId(id);
         setEmail(email);
         setSecret(secret);
-        setTag(tag);
+        setTag(tag?.join(","));
         setNotes(notes);
       }
       onOpen();
@@ -92,11 +92,11 @@ export const AddAccountModal = forwardRef<AddAccountModalRef, Props>((props, ref
   const onConfirmPress = () => {
     if (!email || !secret) return;
     if (isAdd) {
-      return mutate({ email, secret, tag, notes } as any);
+      return mutate({ email, secret, tag: tag.split(",").map(item => item.trim()), notes } as any);
     }
 
     if (!id) return console.log(`Something went wrong.. ${id}`);
-    return edit({ email, secret, tag, notes } as any);
+    return  ({ email, secret, tag, notes } as any);
   }
 
   const reset = () => {
