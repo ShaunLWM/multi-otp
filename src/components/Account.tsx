@@ -67,14 +67,17 @@ export const Account: FC<Props> = ({ account, onDeletePress, onEditPress }) => {
       return null
     }
 
-    return <>{
+    return <Flex flexDir="row">{
       tag.map(tag => <Badge ml='1' colorScheme='green'>{tag}</Badge>)
-    }</>
+    }</Flex>
   }
 
   return <Box marginBottom={2}>
-    <Flex flexDir="row" justifyContent="space-between">
-      <Text>{email}</Text>{renderTag()}
+    <Flex flexDir="row">
+      <Flex flex="1" flexDir="row" justifyContent={"space-between"} paddingRight={2}>
+        <Text>{email}</Text>
+        {renderTag()}
+      </Flex>
       <Flex alignItems="center">
         <Text>{token}</Text>
         <CopyIcon marginLeft={2} _hover={{ cursor: "pointer" }} onClick={onCopyPress} />
