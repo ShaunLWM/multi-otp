@@ -1,8 +1,8 @@
 import { Button, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Textarea, useDisclosure, useToast } from "@chakra-ui/react";
 import { useFirestoreCollectionMutation, useFirestoreDocumentMutation } from "@react-query-firebase/firestore";
+import { doc } from "firebase/firestore";
 import { forwardRef, useImperativeHandle, useState } from "react";
 import { accountCollection } from "../lib/Firebase";
-import { doc } from "firebase/firestore";
 
 type Props = {
   // isOpen: boolean;
@@ -26,6 +26,7 @@ export const AddAccountModal = forwardRef<AddAccountModalRef, Props>((props, ref
   const toast = useToast();
   const isAdd = !id;
   const editDocRef = doc(accountCollection, id || DEFAULT_RANDOM_ID);
+
   const { mutate: edit } = useFirestoreDocumentMutation(editDocRef, {}, {
     onError: (error) => {
       console.error(error);
@@ -96,7 +97,7 @@ export const AddAccountModal = forwardRef<AddAccountModalRef, Props>((props, ref
     }
 
     if (!id) return console.log(`Something went wrong.. ${id}`);
-    return  ({ email, secret, tag, notes } as any);
+    return edit({ email, secret, tag, notes } as any);
   }
 
   const reset = () => {
