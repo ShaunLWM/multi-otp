@@ -80,7 +80,7 @@ export const Account: FC<Props> = ({ account, onDeletePress, onEditPress }) => {
         <CopyIcon marginLeft={2} _hover={{ cursor: "pointer" }} onClick={onCopyPress} />
         <EditIcon marginLeft={2} _hover={{ cursor: "pointer" }} onClick={onEditClick} />
         <DeleteIcon marginLeft={2} onClick={onDeleteClick} _hover={{ cursor: "pointer" }} />
-      r</Flex>
+      </Flex>
     </Flex>
     <Progress value={updatingIn / (PERIOD * 1.0) * 100} size='xs' colorScheme='pink' />
   </Box>
