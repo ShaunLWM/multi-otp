@@ -68,13 +68,13 @@ export const Account: FC<Props> = ({ account, onDeletePress, onEditPress }) => {
     }
 
     return <Flex flexDir="row">{
-      tag.map(tag => <Badge ml='1' colorScheme='green'>{tag}</Badge>)
+      tag.map(tag => <Badge ml='1' backgroundColor="transparent" colorScheme="blue">{tag}</Badge>)
     }</Flex>
   }
 
   return <Box marginBottom={2}>
     <Flex flexDir="row">
-      <Flex flex="1" flexDir="row" justifyContent={"space-between"} paddingRight={2}>
+      <Flex flex="1" flexDir="row" justifyContent={"space-between"} paddingRight={2} alignItems="center">
         <Text>{email}</Text>
         {renderTag()}
       </Flex>
