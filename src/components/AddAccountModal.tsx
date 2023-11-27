@@ -97,7 +97,7 @@ export const AddAccountModal = forwardRef<AddAccountModalRef, Props>((props, ref
     }
 
     if (!id) return console.log(`Something went wrong.. ${id}`);
-    return edit({ email, secret, tag, notes } as any);
+    return edit({ email, secret, tag: tag.split(","), notes } as any);
   }
 
   const reset = () => {
