@@ -14,7 +14,7 @@ export const useAccounts = () => {
 
       return {
         tags: Array.from(tags),
-        accounts: snapshot
+        accounts: snapshot.sort((a, b) => a.email.localeCompare(b.email))
       }
     }
   });
