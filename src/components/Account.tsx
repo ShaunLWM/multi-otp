@@ -1,8 +1,8 @@
 import { CopyIcon, DeleteIcon, EditIcon } from "@chakra-ui/icons";
-import { Badge, Box, Flex, Progress, Text, useToast } from "@chakra-ui/react";
+import { Badge, Box, Flex, Text, useToast } from "@chakra-ui/react";
 import * as OTPAuth from "otpauth";
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
-import { getCurrentSeconds, truncateTo } from "../lib/Helper";
+import { truncateTo } from "../lib/Helper";
 import { useCopyToClipboard } from "../lib/useCopyToClipboard";
 
 type Props = {
@@ -11,13 +11,10 @@ type Props = {
   onEditPress: (account: AccountWithId) => void;
 }
 
-const PERIOD = 30;
-
 export const Account: FC<Props> = ({ account, onDeletePress, onEditPress }) => {
   const toast = useToast();
   const [, copy] = useCopyToClipboard();
   const { email, secret, tag } = account;
-  const [updatingIn, setUpdatingIn] = useState(30);
   const [token, setToken] = useState("");
 
   const totp = useMemo(() => new OTPAuth.TOTP({
@@ -28,8 +25,6 @@ export const Account: FC<Props> = ({ account, onDeletePress, onEditPress }) => {
   }), [secret]);
 
   const update = useCallback(() => {
-    const countdown = PERIOD - (getCurrentSeconds() % PERIOD);
-    setUpdatingIn(countdown);
     setToken(truncateTo(totp.generate(), 6));
   }, [totp]);
 
@@ -85,6 +80,5 @@ export const Account: FC<Props> = ({ account, onDeletePress, onEditPress }) => {
         <DeleteIcon marginLeft={2} onClick={onDeleteClick} _hover={{ cursor: "pointer" }} />
       </Flex>
     </Flex>
-    <Progress value={updatingIn / (PERIOD * 1.0) * 100} size='xs' colorScheme='pink' />
   </Box>
 }
