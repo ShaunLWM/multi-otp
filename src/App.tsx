@@ -4,6 +4,7 @@ import { Account } from './components/Account';
 import { AddAccountModal, AddAccountModalRef } from './components/AddAccountModal';
 import { AddFab } from './components/AddFab';
 import { DeleteModal, DeleteModalRef } from './components/DeleteModal';
+import { Footer } from './components/Footer';
 import { PersonalTab } from './components/PersonalTab';
 import { useAccounts } from './hooks/useAccounts';
 import { getCurrentSeconds } from './lib/Helper';
@@ -71,6 +72,7 @@ function App() {
 
       <AddAccountModal ref={addModalRef} />
       <DeleteModal ref={deleteModalRef} />
+      <Footer />
     </Container>
   );
 }
