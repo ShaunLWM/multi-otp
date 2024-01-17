@@ -1,7 +1,9 @@
-import { Button, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Textarea, useDisclosure, useToast } from "@chakra-ui/react";
+import { Button, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Select, Textarea, useDisclosure, useToast } from "@chakra-ui/react";
 import { useFirestoreCollectionMutation, useFirestoreDocumentMutation } from "@react-query-firebase/firestore";
 import { doc } from "firebase/firestore";
+import { nanoid } from "nanoid";
 import { forwardRef, useImperativeHandle, useState } from "react";
+import useLocalStorage from "use-local-storage";
 import { accountCollection } from "../lib/Firebase";
 
 type Props = {
@@ -10,20 +12,24 @@ type Props = {
 }
 
 export type AddAccountModalRef = {
-  open: (account?: AccountWithId) => void;
+  open: (type: AccountType, account?: AccountWithId) => void;
   close: () => void;
 };
 
 const DEFAULT_RANDOM_ID = "1111111112222222223333333334444444"
 
 export const AddAccountModal = forwardRef<AddAccountModalRef, Props>((props, ref) => {
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const [email, setEmail] = useState("")
-  const [secret, setSecret] = useState("");
-  const [tag, setTag] = useState("");
-  const [notes, setNotes] = useState("");
-  const [id, setId] = useState("");
+  const [personalAccounts, setPersonalAccounts] = useLocalStorage<AccountWithId[]>("accounts", []);
+
   const toast = useToast();
+  const [id, setId] = useState("");
+  const [tag, setTag] = useState("");
+  const [email, setEmail] = useState("")
+  const [notes, setNotes] = useState("");
+  const [secret, setSecret] = useState("");
+  const [type, setType] = useState<AccountType>("shared");
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
   const isAdd = !id;
   const editDocRef = doc(accountCollection, id || DEFAULT_RANDOM_ID);
 
@@ -44,7 +50,7 @@ export const AddAccountModal = forwardRef<AddAccountModalRef, Props>((props, ref
     }
   });
 
-  const { mutate } = useFirestoreCollectionMutation(accountCollection, {
+  const { mutate: add } = useFirestoreCollectionMutation(accountCollection, {
     onError: (error) => {
       console.error(error);
     },
@@ -61,6 +67,10 @@ export const AddAccountModal = forwardRef<AddAccountModalRef, Props>((props, ref
     }
   });
 
+  const onTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setType(event.target.value as AccountType)
+  }
+
   const onHandleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, type: "email" | "secret" | "tag" | "notes") => {
     switch (type) {
       case "email":
@@ -75,7 +85,8 @@ export const AddAccountModal = forwardRef<AddAccountModalRef, Props>((props, ref
   }
 
   useImperativeHandle(ref, () => ({
-    open: (account) => {
+    open: (type: AccountType, account?: AccountWithId) => {
+      console.log(account, type);
       if (account) {
         const { id, email, secret, tag = [], notes = "" } = account;
         setId(id);
@@ -83,7 +94,11 @@ export const AddAccountModal = forwardRef<AddAccountModalRef, Props>((props, ref
         setSecret(secret);
         setTag(tag?.join(","));
         setNotes(notes);
+      } else {
+        reset();
       }
+
+      setType(type);
       onOpen();
     },
     close: onClose,
@@ -92,24 +107,71 @@ export const AddAccountModal = forwardRef<AddAccountModalRef, Props>((props, ref
 
   const onConfirmPress = () => {
     if (!email || !secret) return;
+
     if (isAdd) {
-      return mutate({ email, secret, tag: tag.split(",").map(item => item.trim()), notes } as any);
+      if (type === "shared") {
+        add({ email, secret, tag: tag.split(",").map(item => item.trim()), notes } as any);
+      } else {
+        setPersonalAccounts(prev => [...(prev ?? []), {
+          id: nanoid(),
+          email,
+          secret,
+          tag: tag.split(",").map(item => item.trim()),
+          notes,
+        }]);
+      }
+
+      return onClosePress();
     }
 
-    if (!id) return console.log(`Something went wrong.. ${id}`);
-    return edit({ email, secret, tag: tag.split(","), notes } as any);
+    // Edit
+    if (!id) {
+      return console.log(`Something went wrong.. ${id}`);
+    }
+
+    if (type === "shared") {
+      edit({ email, secret, tag: tag.split(",").map(item => item.trim()), notes } as any);
+    } else {
+      const findId = personalAccounts?.findIndex(item => item.id === id);
+      if (findId < 0) {
+        return toast({
+          title: "Something wrong",
+          description: `Can't find local account - ${id}`,
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+      }
+
+      setPersonalAccounts(prev => {
+        const clone = [...(prev ?? [])];
+        clone[findId] = {
+          ...clone[findId],
+          email,
+          secret,
+          tag: tag.split(",").map(item => item.trim()),
+          notes,
+        }
+
+        return clone;
+      });
+    }
+
+    return onClosePress();
   }
 
   const reset = () => {
+    setId("");
     setEmail("");
     setSecret("");
     setTag("");
     setNotes("");
+    setType("shared");
   }
 
   const onClosePress = () => {
-    onClose();
     reset();
+    onClose();
   }
 
   return (<Modal isOpen={isOpen} onClose={onClose}>
@@ -118,6 +180,10 @@ export const AddAccountModal = forwardRef<AddAccountModalRef, Props>((props, ref
       <ModalHeader>{isAdd ? "Add" : "Modify"} Account</ModalHeader>
       <ModalCloseButton />
       <ModalBody>
+        <Select onChange={onTypeChange} value={type} marginBottom={2}>
+          <option value="shared">Shared</option>
+          <option value="personal">Personal</option>
+        </Select>
         <Input placeholder="Email" value={email} onChange={event => onHandleChange(event, "email")} marginBottom={2} />
         <Input placeholder="Secret key" value={secret} onChange={event => onHandleChange(event, "secret")} marginBottom={2} />
         <Input placeholder="Tag (optional)" value={tag} onChange={event => onHandleChange(event, "tag")} marginBottom={2} />

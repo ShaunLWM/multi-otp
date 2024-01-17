@@ -1,30 +1,34 @@
 import { Button } from "@chakra-ui/button"
 import { useDisclosure } from "@chakra-ui/hooks"
-import { AlertDialog, AlertDialogOverlay, AlertDialogContent, AlertDialogHeader, AlertDialogBody, AlertDialogFooter } from "@chakra-ui/modal"
+import { AlertDialog, AlertDialogBody, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogOverlay } from "@chakra-ui/modal"
+import { useToast } from "@chakra-ui/react"
 import { useFirestoreDocumentDeletion } from "@react-query-firebase/firestore"
 import { doc } from "firebase/firestore"
-import React, { forwardRef, useImperativeHandle, useRef, useState } from "react"
+import { forwardRef, useImperativeHandle, useRef, useState } from "react"
+import useLocalStorage from "use-local-storage"
 import { accountCollection } from "../lib/Firebase"
-import { useToast } from "@chakra-ui/react"
 
 type Props = {
   // email: string;
 }
 
 export type DeleteModalRef = {
-  open: (account: AccountWithId) => void;
+  open: (type: AccountType, account: AccountWithId) => void;
   close: () => void;
 };
 
 export const DeleteModal = forwardRef<DeleteModalRef, Props>((props, ref) => {
   const toast = useToast();
-  const { isOpen, onOpen, onClose } = useDisclosure()
   const cancelRef = useRef<any>();
+  const [type, setType] = useState<AccountType>("shared");
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [personalAccounts, setPersonalAccounts] = useLocalStorage<AccountWithId[]>("accounts", []);
   const [account, setAccount] = useState<AccountWithId | null>(null);
-  const { mutate } = useFirestoreDocumentDeletion(doc(accountCollection, account?.id || "-"), {
+
+  const { mutate: deleteAsync } = useFirestoreDocumentDeletion(doc(accountCollection, account?.id || "-"), {
     onSuccess: () => {
       toast({
-        title: 'Account delete.',
+        title: 'Account deleted.',
         description: "We've deleted your account for you.",
         status: 'success',
         duration: 3000,
@@ -35,8 +39,9 @@ export const DeleteModal = forwardRef<DeleteModalRef, Props>((props, ref) => {
   });
 
   useImperativeHandle(ref, () => ({
-    open: (account) => {
+    open: (type, account) => {
       setAccount(account);
+      setType(type);
       onOpen();
     },
     close: onClose,
@@ -44,7 +49,31 @@ export const DeleteModal = forwardRef<DeleteModalRef, Props>((props, ref) => {
   }), []);
 
   const onDeleteConfirm = () => {
-    mutate();
+    if (!account) {
+      return console.log("Error - account is null");
+    }
+
+    if (type === "personal") {
+      const findId = personalAccounts?.findIndex(item => item.id === account.id);
+      if (findId < 0) {
+        return toast({
+          title: "Something wrong",
+          description: `Can't find local account - ${account.id}`,
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+      }
+
+      setPersonalAccounts(prev => {
+        const clone = [...(prev ?? [])];
+        clone.splice(findId, 1);
+        return clone;
+      });
+    } else {
+      deleteAsync();
+    }
+
     onClose();
   }
 

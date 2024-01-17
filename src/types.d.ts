@@ -8,3 +8,5 @@ type Account = {
 type AccountWithId = Account & {
   id: string;
 }
+
+type AccountType = "shared" | "personal";
