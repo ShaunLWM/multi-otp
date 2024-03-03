@@ -1,4 +1,4 @@
-import { CopyIcon, DeleteIcon, EditIcon } from "@chakra-ui/icons";
+import { CopyIcon } from "@chakra-ui/icons";
 import { Badge, Box, Flex, Text, useToast } from "@chakra-ui/react";
 import * as OTPAuth from "otpauth";
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
@@ -76,8 +76,8 @@ export const Account: FC<Props> = ({ account, onDeletePress, onEditPress }) => {
       <Flex alignItems="center">
         <Text>{token}</Text>
         <CopyIcon marginLeft={2} _hover={{ cursor: "pointer" }} onClick={onCopyPress} />
-        <EditIcon marginLeft={2} _hover={{ cursor: "pointer" }} onClick={onEditClick} />
-        <DeleteIcon marginLeft={2} onClick={onDeleteClick} _hover={{ cursor: "pointer" }} />
+        {/* <EditIcon marginLeft={2} _hover={{ cursor: "pointer" }} onClick={onEditClick} /> */}
+        {/* <DeleteIcon marginLeft={2} onClick={onDeleteClick} _hover={{ cursor: "pointer" }} /> */}
       </Flex>
     </Flex>
   </Box>

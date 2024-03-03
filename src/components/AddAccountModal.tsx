@@ -1,5 +1,6 @@
-import { Button, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Select, Textarea, useDisclosure, useToast } from "@chakra-ui/react";
+import { Button, Flex, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Select, Text, Textarea, useDisclosure, useToast } from "@chakra-ui/react";
 import { useFirestoreCollectionMutation, useFirestoreDocumentMutation } from "@react-query-firebase/firestore";
+import { base32 } from "@scure/base";
 import { doc } from "firebase/firestore";
 import { nanoid } from "nanoid";
 import { forwardRef, useImperativeHandle, useState } from "react";
@@ -24,9 +25,10 @@ export const AddAccountModal = forwardRef<AddAccountModalRef, Props>((props, ref
   const toast = useToast();
   const [id, setId] = useState("");
   const [tag, setTag] = useState("");
-  const [email, setEmail] = useState("")
+  const [email, setEmail] = useState("");
   const [notes, setNotes] = useState("");
   const [secret, setSecret] = useState("");
+  const [encodedKey, setEncodedKey] = useState("");
   const [type, setType] = useState<AccountType>("shared");
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -71,7 +73,7 @@ export const AddAccountModal = forwardRef<AddAccountModalRef, Props>((props, ref
     setType(event.target.value as AccountType)
   }
 
-  const onHandleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, type: "email" | "secret" | "tag" | "notes") => {
+  const onHandleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, type: "email" | "secret" | "tag" | "notes" | "encodedKey") => {
     switch (type) {
       case "email":
         return setEmail(event.target.value);
@@ -81,6 +83,8 @@ export const AddAccountModal = forwardRef<AddAccountModalRef, Props>((props, ref
         return setTag(event.target.value);
       case "notes":
         return setNotes(event.target.value);
+      case "encodedKey":
+        return setEncodedKey(event.target.value);
     }
   }
 
@@ -106,16 +110,28 @@ export const AddAccountModal = forwardRef<AddAccountModalRef, Props>((props, ref
   }), []);
 
   const onConfirmPress = () => {
-    if (!email || !secret) return;
+    if (secret && encodedKey) {
+      return toast({
+        title: "Either secret or encodedKey can be filled.",
+        status: "error",
+      });
+    }
+
+    let _secret = secret;
+    if (encodedKey) {
+      _secret = base32.encode(new TextEncoder().encode('hello'));
+    }
+
+    if (!email || !_secret) return;
 
     if (isAdd) {
       if (type === "shared") {
-        add({ email, secret, tag: tag.split(",").map(item => item.trim()), notes } as any);
+        add({ email, secret: _secret, tag: tag.split(",").map(item => item.trim()), notes } as any);
       } else {
         setPersonalAccounts(prev => [...(prev ?? []), {
           id: nanoid(),
           email,
-          secret,
+          secret: _secret,
           tag: tag.split(",").map(item => item.trim()),
           notes,
         }]);
@@ -130,7 +146,7 @@ export const AddAccountModal = forwardRef<AddAccountModalRef, Props>((props, ref
     }
 
     if (type === "shared") {
-      edit({ email, secret, tag: tag.split(",").map(item => item.trim()), notes } as any);
+      edit({ email, secret: _secret, tag: tag.split(",").map(item => item.trim()), notes } as any);
     } else {
       const findId = personalAccounts?.findIndex(item => item.id === id);
       if (findId < 0) {
@@ -148,7 +164,7 @@ export const AddAccountModal = forwardRef<AddAccountModalRef, Props>((props, ref
         clone[findId] = {
           ...clone[findId],
           email,
-          secret,
+          secret: _secret,
           tag: tag.split(",").map(item => item.trim()),
           notes,
         }
@@ -164,6 +180,7 @@ export const AddAccountModal = forwardRef<AddAccountModalRef, Props>((props, ref
     setId("");
     setEmail("");
     setSecret("");
+    setEncodedKey("");
     setTag("");
     setNotes("");
     setType("shared");
@@ -185,7 +202,11 @@ export const AddAccountModal = forwardRef<AddAccountModalRef, Props>((props, ref
           <option value="personal">Personal</option>
         </Select>
         <Input placeholder="Email" value={email} onChange={event => onHandleChange(event, "email")} marginBottom={2} />
-        <Input placeholder="Secret key" value={secret} onChange={event => onHandleChange(event, "secret")} marginBottom={2} />
+        <Flex alignItems="center" marginBottom={2}>
+          <Input flex={1} placeholder="Secret key" value={secret} onChange={event => onHandleChange(event, "secret")} />
+          <Text marginLeft={2} marginRight={2}>OR </Text>
+          <Input flex={1} placeholder="Encoded key" value={encodedKey} onChange={event => onHandleChange(event, "encodedKey")} />
+        </Flex>
         <Input placeholder="Tag (optional)" value={tag} onChange={event => onHandleChange(event, "tag")} marginBottom={2} />
         <Textarea placeholder="Notes (optional)" value={notes} onChange={event => onHandleChange(event, "notes")} />
       </ModalBody>
