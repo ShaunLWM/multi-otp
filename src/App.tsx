@@ -1,5 +1,6 @@
 import { Container, Progress, Select, Tab, TabList, TabPanel, TabPanels, Tabs } from '@chakra-ui/react';
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
+import useLocalStorage from 'use-local-storage';
 import { Account } from './components/Account';
 import { AddAccountModal, AddAccountModalRef } from './components/AddAccountModal';
 import { AddFab } from './components/AddFab';
@@ -20,7 +21,8 @@ function App() {
 
   const { data, isLoading } = useAccounts();
   const { accounts, tags } = data || {};
-  const filteredAccounts = accounts?.filter(account => currentTag !== "All" ? account.tag?.some(tag => tag?.toLowerCase() === currentTag.toLowerCase()) : true);
+  const [localAccounts] = useLocalStorage<AccountWithId[]>("accounts", []);
+  const filteredAccounts = [...(accounts ?? []), ...localAccounts]?.filter(account => currentTag !== "All" ? account.tag?.some(tag => tag?.toLowerCase() === currentTag.toLowerCase()) : true);
 
   const onHandleTagChange = (event: ChangeEvent<HTMLSelectElement>) => {
     setCurrentTag(event.target.value)
