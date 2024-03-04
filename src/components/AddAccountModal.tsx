@@ -119,7 +119,7 @@ export const AddAccountModal = forwardRef<AddAccountModalRef, Props>((props, ref
 
     let _secret = secret;
     if (encodedKey) {
-      _secret = base32.encode(new TextEncoder().encode('hello'));
+      _secret = base32.encode(new TextEncoder().encode(encodedKey));
     }
 
     if (!email || !_secret) return;
