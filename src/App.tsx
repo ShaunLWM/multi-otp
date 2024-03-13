@@ -22,7 +22,7 @@ function App() {
   const { data, isLoading } = useAccounts();
   const { accounts, tags } = data || {};
   const [localAccounts] = useLocalStorage<AccountWithId[]>("accounts", []);
-  const filteredAccounts = [...(accounts ?? []), ...localAccounts]?.filter(account => currentTag !== "All" ? account.tag?.some(tag => tag?.toLowerCase() === currentTag.toLowerCase()) : true);
+  const remoteAccounts = accounts?.filter(account => currentTag !== "All" ? account.tag?.some(tag => tag?.toLowerCase() === currentTag.toLowerCase()) : true);
 
   const onHandleTagChange = (event: ChangeEvent<HTMLSelectElement>) => {
     setCurrentTag(event.target.value)
@@ -57,7 +57,7 @@ function App() {
       <Select value={currentTag} onChange={onHandleTagChange}>
         {tags?.map(tag => <option key={tag} value={tag}>{tag}</option>)}
       </Select>
-      {filteredAccounts && filteredAccounts?.length > 0 && <Progress value={updatingIn / (PERIOD * 1.0) * 100} size="xs" colorScheme="pink" marginTop={2} marginBottom={2} />}
+      {((remoteAccounts ?? localAccounts) ?? [])?.length > 0 && <Progress value={updatingIn / (PERIOD * 1.0) * 100} size="xs" colorScheme="pink" marginTop={2} marginBottom={2} />}
       <Tabs onChange={(index) => setTabIndex(index)}>
         <TabList>
           <Tab>Shared</Tab>
@@ -66,7 +66,7 @@ function App() {
 
         <TabPanels>
           <TabPanel>
-            {!isLoading && filteredAccounts?.map((account, index) => <Account key={`account-${account.email}-${index}`} account={account} onDeletePress={(acc) => onDeletePress("shared", acc)} onEditPress={acc => onAddModalPress("shared", acc)} />)}
+            {!isLoading && remoteAccounts?.map((account, index) => <Account key={`account-${account.email}-${index}`} account={account} onDeletePress={(acc) => onDeletePress("shared", acc)} onEditPress={acc => onAddModalPress("shared", acc)} />)}
           </TabPanel>
           <PersonalTab onDeletePress={(acc) => onDeletePress("personal", acc)} onEditPress={acc => onAddModalPress("personal", acc)} />
         </TabPanels>
